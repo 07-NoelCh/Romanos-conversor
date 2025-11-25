@@ -242,4 +242,32 @@ describe('🎯 Tests de Casos Especiales', () => {
     expect(romanToArabic('MCDXLIV')).toBe(1444);
   });
 
-  test('Debe manejar el número más compl
+  test('Debe manejar el número más complejo', () => {
+    expect(arabicToRoman(3888)).toBe('MMMDCCCLXXXVIII');
+    expect(romanToArabic('MMMDCCCLXXXVIII')).toBe(3888);
+  });
+});
+
+describe('🔍 Tests de Validación de Entrada', () => {
+  test('Debe validar caracteres romanos correctamente', () => {
+    // Válidos
+    expect(() => romanToArabic('I')).not.toThrow();
+    expect(() => romanToArabic('IVXLCDM')).not.toThrow();
+    
+    // Inválidos
+    expect(() => romanToArabic('ABCD')).toThrow();
+    expect(() => romanToArabic('123')).toThrow();
+    expect(() => romanToArabic('I2V')).toThrow();
+  });
+
+  test('Debe validar rangos numéricos correctamente', () => {
+    // Válidos
+    expect(() => arabicToRoman(1)).not.toThrow();
+    expect(() => arabicToRoman(3999)).not.toThrow();
+    
+    // Inválidos
+    expect(() => arabicToRoman(0)).toThrow();
+    expect(() => arabicToRoman(4000)).toThrow();
+    expect(() => arabicToRoman(-1)).toThrow();
+  });
+});
