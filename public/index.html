@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversor Romano ↔ Arábigo - HTTP API</title>
+    <title>Conversor Romano ↔ Arábigo - Dual</title>
     <style>
         * {
             margin: 0;
@@ -22,7 +22,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 900px;
             width: 100%;
             background: white;
             padding: 40px;
@@ -33,19 +33,49 @@
         h1 {
             text-align: center;
             color: #667eea;
-            margin-bottom: 10px;
+            margin-bottom: 30px;
             font-size: 28px;
         }
 
-        .subtitle {
-            text-align: center;
-            color: #666;
+        .converters-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
             margin-bottom: 30px;
-            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .converters-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .converter-card {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s;
+        }
+
+        .converter-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         label {
@@ -53,11 +83,12 @@
             margin-bottom: 8px;
             color: #333;
             font-weight: 600;
+            font-size: 14px;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             font-size: 16px;
@@ -70,66 +101,38 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .method-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .method-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .method-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .method-btn:hover:not(.active) {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-
-        button.convert-btn {
+        .convert-btn {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        button.convert-btn:hover {
+        .convert-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        button.convert-btn:active {
+        .convert-btn:active {
             transform: translateY(0);
         }
 
-        button.convert-btn:disabled {
+        .convert-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
 
         .result-box {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9ff;
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
             border-radius: 10px;
             border-left: 4px solid #667eea;
             display: none;
@@ -151,26 +154,28 @@
             }
         }
 
-        .result-title {
+        .result-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
             font-weight: 600;
-            color: #667eea;
-            margin-bottom: 10px;
         }
 
-        .result-content {
+        .result-value {
             font-size: 24px;
             font-weight: bold;
-            color: #333;
+            color: #667eea;
             word-break: break-all;
         }
 
         .error-box {
-            margin-top: 20px;
-            padding: 15px;
+            margin-top: 15px;
+            padding: 12px;
             background: #fee;
-            border-radius: 10px;
+            border-radius: 8px;
             border-left: 4px solid #e74c3c;
             color: #c0392b;
+            font-size: 13px;
             display: none;
         }
 
@@ -181,43 +186,22 @@
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
-        .loading {
+        .method-btn {
             display: none;
-            text-align: center;
-            color: #667eea;
-            margin-top: 20px;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .info-box {
-            margin-top: 20px;
+            margin-top: 30px;
             padding: 15px;
             background: #e8f4f8;
             border-radius: 10px;
             font-size: 13px;
             color: #555;
+            text-align: center;
         }
 
         .info-box strong {
@@ -228,17 +212,18 @@
             margin-top: 30px;
             padding: 20px;
             background: #fafafa;
-            border-radius: 10px;
+            border-radius: 15px;
         }
 
         .history-title {
             font-weight: 600;
             margin-bottom: 15px;
             color: #333;
+            font-size: 16px;
         }
 
         .history-item {
-            padding: 10px;
+            padding: 12px;
             background: white;
             margin-bottom: 8px;
             border-radius: 8px;
@@ -259,64 +244,108 @@
             font-size: 13px;
         }
 
-        .method-info {
-            margin: 10px 0;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #666;
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 5px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🔄 Conversor Romano ↔ Arábigo</h1>
-        <p class="subtitle">API REST con protocolos HTTP (GET/POST)</p>
 
-        <div class="method-selector">
-            <button class="method-btn active" data-method="GET" onclick="selectMethod('GET')">
-                📥 Método GET
-            </button>
-            <button class="method-btn" data-method="POST" onclick="selectMethod('POST')">
-                📤 Método POST
-            </button>
-        </div>
+        <div class="converters-grid">
+            <!-- Conversor Romano → Arábigo -->
+            <div class="converter-card">
+                <div class="card-title">
+                    🏛️ Romano → Arábigo
+                </div>
+                
+                <div class="input-group">
+                    <label for="romanInput">Número Romano:</label>
+                    <input 
+                        type="text" 
+                        id="romanInput" 
+                        placeholder="Ej: XIV, MCMXCIV"
+                        onkeypress="if(event.key==='Enter') convertRomanToArabic()"
+                    >
+                </div>
 
-        <div class="method-info" id="methodInfo">
-            <strong>GET:</strong> Usa parámetros en la URL (/api/r2a?roman=XIV)
-        </div>
+                <button class="convert-btn" onclick="convertRomanToArabic()">
+                    ➡️ Convertir
+                </button>
 
-        <div class="input-group">
-            <label for="valor">Ingrese un número:</label>
-            <input 
-                type="text" 
-                id="valor" 
-                placeholder="Ej: XIV o 14"
-                onkeypress="if(event.key==='Enter') convertir()"
-            >
-        </div>
+                <div class="loading" id="loadingR2A">
+                    <div class="spinner"></div>
+                    <span>Convirtiendo...</span>
+                </div>
 
-        <button class="convert-btn" onclick="convertir()">
-            🚀 Convertir
-        </button>
+                <div class="error-box" id="errorR2A"></div>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 10px;">Procesando solicitud HTTP...</p>
-        </div>
+                <div class="result-box" id="resultR2A">
+                    <div class="result-label">Resultado en Arábigo:</div>
+                    <div class="result-value" id="resultValueR2A"></div>
+                </div>
+            </div>
 
-        <div class="error-box" id="error"></div>
+            <!-- Conversor Arábigo → Romano -->
+            <div class="converter-card">
+                <div class="card-title">
+                    🔢 Arábigo → Romano
+                </div>
+                
+                <div class="input-group">
+                    <label for="arabicInput">Número Arábigo:</label>
+                    <input 
+                        type="text" 
+                        id="arabicInput" 
+                        placeholder="Ej: 14, 1994"
+                        onkeypress="if(event.key==='Enter') convertArabicToRoman()"
+                    >
+                </div>
 
-        <div class="result-box" id="resultBox">
-            <div class="result-title">✅ Resultado:</div>
-            <div class="result-content" id="resultado"></div>
-            <div style="margin-top: 10px; font-size: 12px; color: #999;" id="requestInfo"></div>
+                <button class="convert-btn" onclick="convertArabicToRoman()">
+                    ➡️ Convertir
+                </button>
+
+                <div class="loading" id="loadingA2R">
+                    <div class="spinner"></div>
+                    <span>Convirtiendo...</span>
+                </div>
+
+                <div class="error-box" id="errorA2R"></div>
+
+                <div class="result-box" id="resultA2R">
+                    <div class="result-label">Resultado en Romano:</div>
+                    <div class="result-value" id="resultValueA2R"></div>
+                </div>
+            </div>
         </div>
 
         <div class="info-box">
-            <strong>💡 Tip:</strong> Ingrese números romanos (I, V, X, L, C, D, M) o números del 1 al 3999.
-            La conversión se detecta automáticamente.
+            <strong>💡 Información:</strong> Romano (I-MMMCMXCIX) = Arábigo (1-3999)
         </div>
 
         <div class="history">
@@ -329,48 +358,21 @@
     </div>
 
     <script>
-        let currentMethod = 'GET';
         let historial = [];
 
-        function selectMethod(method) {
-            currentMethod = method;
-            
-            // Update buttons
-            document.querySelectorAll('.method-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.method === method) {
-                    btn.classList.add('active');
-                }
-            });
+        async function convertRomanToArabic() {
+            const input = document.getElementById('romanInput').value.trim();
+            const resultBox = document.getElementById('resultR2A');
+            const resultValue = document.getElementById('resultValueR2A');
+            const errorBox = document.getElementById('errorR2A');
+            const loading = document.getElementById('loadingR2A');
 
-            // Update info
-            const info = document.getElementById('methodInfo');
-            if (method === 'GET') {
-                info.innerHTML = '<strong>GET:</strong> Usa parámetros en la URL (/api/r2a?roman=XIV)';
-            } else {
-                info.innerHTML = '<strong>POST:</strong> Envía datos en el cuerpo de la petición (JSON)';
-            }
-        }
-
-        function esRomano(txt) {
-            return /^[MDCLXVI]+$/i.test(txt.trim());
-        }
-
-        async function convertir() {
-            const valor = document.getElementById('valor').value.trim();
-            const resultado = document.getElementById('resultado');
-            const resultBox = document.getElementById('resultBox');
-            const errorBox = document.getElementById('error');
-            const loading = document.getElementById('loading');
-            const requestInfo = document.getElementById('requestInfo');
-
-            // Reset
-            errorBox.classList.remove('show');
             resultBox.classList.remove('show');
+            errorBox.classList.remove('show');
             errorBox.textContent = '';
 
-            if (!valor) {
-                errorBox.textContent = '⚠️ Por favor ingrese un valor';
+            if (!input) {
+                errorBox.textContent = '⚠️ Por favor ingrese un número romano';
                 errorBox.classList.add('show');
                 return;
             }
@@ -378,70 +380,94 @@
             loading.classList.add('show');
 
             try {
-                let response, data;
-                const isRoman = esRomano(valor);
-
-                if (currentMethod === 'GET') {
-                    // Método GET con query parameters
-                    const endpoint = isRoman 
-                        ? `/api/r2a?roman=${encodeURIComponent(valor)}`
-                        : `/api/a2r?arabic=${encodeURIComponent(valor)}`;
-
-                    response = await fetch(endpoint, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    requestInfo.textContent = `GET ${endpoint}`;
-
-                } else {
-                    // Método POST con body JSON
-                    response = await fetch('/api/convert', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ value: valor })
-                    });
-
-                    requestInfo.textContent = `POST /api/convert - Body: ${JSON.stringify({value: valor})}`;
+                // Usa método GET con la API /api/r2a
+                const url = `/api/r2a?roman=${encodeURIComponent(input)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error HTTP ${response.status}: ${errorText}`);
                 }
-
-                data = await response.json();
+                
+                const data = await response.json();
 
                 if (!response.ok || data.status === 'error') {
                     throw new Error(data.message || 'Error en la conversión');
                 }
 
-                // Mostrar resultado
-                if (isRoman) {
-                    resultado.innerHTML = `
-                        <div style="color: #667eea;">${data.roman}</div>
-                        <div style="font-size: 16px; margin: 10px 0;">equivale a</div>
-                        <div style="color: #764ba2;">${data.arabic}</div>
-                    `;
-                } else {
-                    resultado.innerHTML = `
-                        <div style="color: #764ba2;">${data.arabic}</div>
-                        <div style="font-size: 16px; margin: 10px 0;">equivale a</div>
-                        <div style="color: #667eea;">${data.roman}</div>
-                    `;
-                }
-
+                resultValue.textContent = data.arabic;
                 resultBox.classList.add('show');
 
-                // Agregar al historial
                 agregarHistorial({
-                    input: valor,
-                    result: isRoman ? data.arabic : data.roman,
-                    method: currentMethod,
-                    timestamp: new Date().toLocaleTimeString()
+                    input: data.roman,
+                    result: data.arabic,
+                    type: 'R→A'
                 });
 
             } catch (error) {
-                errorBox.textContent = `❌ Error: ${error.message}`;
+                errorBox.textContent = `❌ ${error.message}`;
+                errorBox.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        async function convertArabicToRoman() {
+            const input = document.getElementById('arabicInput').value.trim();
+            const resultBox = document.getElementById('resultA2R');
+            const resultValue = document.getElementById('resultValueA2R');
+            const errorBox = document.getElementById('errorA2R');
+            const loading = document.getElementById('loadingA2R');
+
+            resultBox.classList.remove('show');
+            errorBox.classList.remove('show');
+            errorBox.textContent = '';
+
+            if (!input) {
+                errorBox.textContent = '⚠️ Por favor ingrese un número arábigo';
+                errorBox.classList.add('show');
+                return;
+            }
+
+            loading.classList.add('show');
+
+            try {
+                // Usa método GET con la API /api/a2r
+                const url = `/api/a2r?arabic=${encodeURIComponent(input)}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+
+                if (!response.ok || data.status === 'error') {
+                    throw new Error(data.message || 'Error en la conversión');
+                }
+
+                resultValue.textContent = data.roman;
+                resultBox.classList.add('show');
+
+                agregarHistorial({
+                    input: data.arabic,
+                    result: data.roman,
+                    type: 'A→R'
+                });
+
+            } catch (error) {
+                errorBox.textContent = `❌ ${error.message}`;
                 errorBox.classList.add('show');
             } finally {
                 loading.classList.remove('show');
@@ -449,15 +475,19 @@
         }
 
         function agregarHistorial(item) {
-            historial.unshift(item);
+            historial.unshift({
+                ...item,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            
             if (historial.length > 10) historial.pop();
             
             const historialDiv = document.getElementById('historial');
             historialDiv.innerHTML = historial.map(h => `
                 <div class="history-item">
-                    <span>${h.input} → ${h.result}</span>
+                    <span><strong>${h.type}:</strong> ${h.input} → ${h.result}</span>
                     <span style="font-size: 11px; color: #999;">
-                        ${h.method} | ${h.timestamp}
+                        ${h.timestamp}
                     </span>
                 </div>
             `).join('');
@@ -466,7 +496,7 @@
         function limpiarHistorial() {
             historial = [];
             document.getElementById('historial').innerHTML = 
-                '<p style="color: #999; text-align: center;">No hay conversiones recientes</p>';
+                '<p style="color: #999; text-align: center; padding: 10px;">No hay conversiones recientes</p>';
         }
 
         // Inicializar
