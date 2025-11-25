@@ -1,260 +1,69 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Convertidor de Números Romanos</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conversor Números Romanos</title>
 
+    <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
             padding: 20px;
         }
 
         .container {
+            max-width: 420px;
+            margin: auto;
             background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            max-width: 500px;
-            width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        input[type="text"]::placeholder {
-            color: #999;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #0002;
         }
 
         button {
             width: 100%;
-            padding: 14px;
-            background: #007bff;
-            color: white;
+            padding: 12px;
+            background: #0066ff;
             border: none;
+            color: white;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
             cursor: pointer;
-            transition: background 0.3s;
+            font-size: 16px;
         }
 
-        button:hover {
-            background: #0056b3;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .result-box {
+        #historial-conversiones {
             margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            min-height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
-        .result-text {
-            color: #333;
-            font-size: 18px;
-            font-weight: 500;
-            text-align: center;
-        }
-
-        .result-text.empty {
-            color: #999;
-            font-weight: normal;
-        }
-
-        .error {
-            color: #dc3545;
-            font-size: 14px;
-            margin-top: 5px;
+        #loading, #error {
             display: none;
-        }
-
-        .error.show {
-            display: block;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            color: #667eea;
             margin-top: 10px;
+            font-weight: bold;
         }
 
-        .loading.show {
-            display: block;
-        }
-
-        .example-text {
-            text-align: center;
-            color: #666;
-            font-size: 12px;
-            margin-top: 5px;
-            font-style: italic;
-        }
+        #loading.show { display:block; color:#0066ff; }
+        #error.show { display:block; color:red; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Convertidor de Números Romanos</h1>
-        <p class="subtitle">Escribe un número (ej. 1994) o un número romano (ej. MCMXCIV)</p>
 
-        <div class="form-group">
-            <label for="valor">Valor:</label>
-            <input 
-                type="text" 
-                id="valor" 
-                placeholder="Escribe aquí..."
-                autocomplete="off"
-            >
-            <p class="example-text">Ejemplos: 2024, MMXXIV, 9, IX</p>
-            <div class="error" id="error"></div>
-        </div>
+    <div class="container">
+        <h2>Conversor Romano ↔ Arábigo</h2>
+
+        <label>Ingrese número:</label>
+        <input type="text" id="valor" style="width:100%;padding:10px;margin:10px 0">
 
         <button onclick="convertir()">Convertir</button>
 
-        <div class="loading" id="loading">⏳ Convirtiendo...</div>
+        <div id="loading">Procesando...</div>
+        <div id="error"></div>
 
-        <div class="form-group">
-            <label>Resultado:</label>
-            <div class="result-box">
-                <div class="result-text empty" id="resultado">El resultado aparecerá aquí</div>
-            </div>
-        </div>
+        <h3>Resultado:</h3>
+        <div id="resultado" style="font-size:20px;font-weight:bold"></div>
     </div>
 
-    <script>
-        // URL de tu API en Vercel - REEMPLAZA CON TU URL ACTUAL
-     const API_URL = 'https://conversor-numeros-romanos-a-ar-bigos-iqwulk84q.vercel.app/api/app';
-        // Detectar si el input es romano o arábigo
-        function esNumeroRomano(texto) {
-            // Si contiene solo letras romanas válidas
-            return /^[MDCLXVI]+$/i.test(texto);
-        }
-
-        async function convertir() {
-            const valor = document.getElementById('valor').value.trim();
-            const resultado = document.getElementById('resultado');
-            const errorDiv = document.getElementById('error');
-            const loadingDiv = document.getElementById('loading');
-
-            // Limpiar errores previos
-            errorDiv.classList.remove('show');
-            errorDiv.textContent = '';
-
-            // Validar que haya un valor
-            if (!valor) {
-                errorDiv.textContent = 'Por favor, ingresa un valor';
-                errorDiv.classList.add('show');
-                return;
-            }
-
-            // Mostrar loading
-            loadingDiv.classList.add('show');
-            resultado.textContent = 'Procesando...';
-            resultado.classList.add('empty');
-
-            try {
-                let url;
-                
-                if (esNumeroRomano(valor)) {
-                    // Es romano → convertir a arábigo
-                    url = `${API_URL}/r2a?roman=${encodeURIComponent(valor)}`;
-                } else {
-                    // Es arábigo → convertir a romano
-                    const numero = parseInt(valor);
-                    if (isNaN(numero)) {
-                        throw new Error('Valor inválido. Debe ser un número o número romano.');
-                    }
-                    url = `${API_URL}/a2r?arabic=${numero}`;
-                }
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.message || 'Error al convertir');
-                }
-
-                // Mostrar resultado
-                if (esNumeroRomano(valor)) {
-                    resultado.textContent = `${data.roman} = ${data.arabic}`;
-                } else {
-                    resultado.textContent = `${data.arabic} = ${data.roman}`;
-                }
-                resultado.classList.remove('empty');
-
-            } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.classList.add('show');
-                resultado.textContent = 'Error en la conversión';
-                resultado.classList.add('empty');
-            } finally {
-                loadingDiv.classList.remove('show');
-            }
-        }
-
-        // Permitir convertir con Enter
-        document.getElementById('valor').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                convertir();
-            }
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
