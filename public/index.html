@@ -1,69 +1,476 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conversor Números Romanos</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor Romano ↔ Arábigo - HTTP API</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
-            max-width: 420px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px #0002;
-        }
-
-        button {
+            max-width: 600px;
             width: 100%;
-            padding: 12px;
-            background: #0066ff;
-            border: none;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
-        #historial-conversiones {
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .method-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .method-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .method-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .method-btn:hover:not(.active) {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        button.convert-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button.convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        button.convert-btn:active {
+            transform: translateY(0);
+        }
+
+        button.convert-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-box {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-content {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .error-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fee;
+            border-radius: 10px;
+            border-left: 4px solid #e74c3c;
+            color: #c0392b;
+            display: none;
+        }
+
+        .error-box.show {
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
             margin-top: 20px;
         }
 
-        #loading, #error {
-            display: none;
-            margin-top: 10px;
-            font-weight: bold;
+        .loading.show {
+            display: block;
         }
 
-        #loading.show { display:block; color:#0066ff; }
-        #error.show { display:block; color:red; }
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+
+        .history {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 10px;
+        }
+
+        .history-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .history-item {
+            padding: 10px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-clear {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .method-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h2>Conversor Romano ↔ Arábigo</h2>
+        <h1>🔄 Conversor Romano ↔ Arábigo</h1>
+        <p class="subtitle">API REST con protocolos HTTP (GET/POST)</p>
 
-        <label>Ingrese número:</label>
-        <input type="text" id="valor" style="width:100%;padding:10px;margin:10px 0">
+        <div class="method-selector">
+            <button class="method-btn active" data-method="GET" onclick="selectMethod('GET')">
+                📥 Método GET
+            </button>
+            <button class="method-btn" data-method="POST" onclick="selectMethod('POST')">
+                📤 Método POST
+            </button>
+        </div>
 
-        <button onclick="convertir()">Convertir</button>
+        <div class="method-info" id="methodInfo">
+            <strong>GET:</strong> Usa parámetros en la URL (/api/r2a?roman=XIV)
+        </div>
 
-        <div id="loading">Procesando...</div>
-        <div id="error"></div>
+        <div class="input-group">
+            <label for="valor">Ingrese un número:</label>
+            <input 
+                type="text" 
+                id="valor" 
+                placeholder="Ej: XIV o 14"
+                onkeypress="if(event.key==='Enter') convertir()"
+            >
+        </div>
 
-        <h3>Resultado:</h3>
-        <div id="resultado" style="font-size:20px;font-weight:bold"></div>
+        <button class="convert-btn" onclick="convertir()">
+            🚀 Convertir
+        </button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px;">Procesando solicitud HTTP...</p>
+        </div>
+
+        <div class="error-box" id="error"></div>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-title">✅ Resultado:</div>
+            <div class="result-content" id="resultado"></div>
+            <div style="margin-top: 10px; font-size: 12px; color: #999;" id="requestInfo"></div>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Tip:</strong> Ingrese números romanos (I, V, X, L, C, D, M) o números del 1 al 3999.
+            La conversión se detecta automáticamente.
+        </div>
+
+        <div class="history">
+            <div class="history-title">📜 Historial de conversiones</div>
+            <div id="historial"></div>
+            <button class="history-clear" onclick="limpiarHistorial()">
+                🗑️ Limpiar historial
+            </button>
+        </div>
     </div>
 
-    <script src="app.js"></script>
+    <script>
+        let currentMethod = 'GET';
+        let historial = [];
+
+        function selectMethod(method) {
+            currentMethod = method;
+            
+            // Update buttons
+            document.querySelectorAll('.method-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.method === method) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update info
+            const info = document.getElementById('methodInfo');
+            if (method === 'GET') {
+                info.innerHTML = '<strong>GET:</strong> Usa parámetros en la URL (/api/r2a?roman=XIV)';
+            } else {
+                info.innerHTML = '<strong>POST:</strong> Envía datos en el cuerpo de la petición (JSON)';
+            }
+        }
+
+        function esRomano(txt) {
+            return /^[MDCLXVI]+$/i.test(txt.trim());
+        }
+
+        async function convertir() {
+            const valor = document.getElementById('valor').value.trim();
+            const resultado = document.getElementById('resultado');
+            const resultBox = document.getElementById('resultBox');
+            const errorBox = document.getElementById('error');
+            const loading = document.getElementById('loading');
+            const requestInfo = document.getElementById('requestInfo');
+
+            // Reset
+            errorBox.classList.remove('show');
+            resultBox.classList.remove('show');
+            errorBox.textContent = '';
+
+            if (!valor) {
+                errorBox.textContent = '⚠️ Por favor ingrese un valor';
+                errorBox.classList.add('show');
+                return;
+            }
+
+            loading.classList.add('show');
+
+            try {
+                let response, data;
+                const isRoman = esRomano(valor);
+
+                if (currentMethod === 'GET') {
+                    // Método GET con query parameters
+                    const endpoint = isRoman 
+                        ? `/api/r2a?roman=${encodeURIComponent(valor)}`
+                        : `/api/a2r?arabic=${encodeURIComponent(valor)}`;
+
+                    response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    requestInfo.textContent = `GET ${endpoint}`;
+
+                } else {
+                    // Método POST con body JSON
+                    response = await fetch('/api/convert', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ value: valor })
+                    });
+
+                    requestInfo.textContent = `POST /api/convert - Body: ${JSON.stringify({value: valor})}`;
+                }
+
+                data = await response.json();
+
+                if (!response.ok || data.status === 'error') {
+                    throw new Error(data.message || 'Error en la conversión');
+                }
+
+                // Mostrar resultado
+                if (isRoman) {
+                    resultado.innerHTML = `
+                        <div style="color: #667eea;">${data.roman}</div>
+                        <div style="font-size: 16px; margin: 10px 0;">equivale a</div>
+                        <div style="color: #764ba2;">${data.arabic}</div>
+                    `;
+                } else {
+                    resultado.innerHTML = `
+                        <div style="color: #764ba2;">${data.arabic}</div>
+                        <div style="font-size: 16px; margin: 10px 0;">equivale a</div>
+                        <div style="color: #667eea;">${data.roman}</div>
+                    `;
+                }
+
+                resultBox.classList.add('show');
+
+                // Agregar al historial
+                agregarHistorial({
+                    input: valor,
+                    result: isRoman ? data.arabic : data.roman,
+                    method: currentMethod,
+                    timestamp: new Date().toLocaleTimeString()
+                });
+
+            } catch (error) {
+                errorBox.textContent = `❌ Error: ${error.message}`;
+                errorBox.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        function agregarHistorial(item) {
+            historial.unshift(item);
+            if (historial.length > 10) historial.pop();
+            
+            const historialDiv = document.getElementById('historial');
+            historialDiv.innerHTML = historial.map(h => `
+                <div class="history-item">
+                    <span>${h.input} → ${h.result}</span>
+                    <span style="font-size: 11px; color: #999;">
+                        ${h.method} | ${h.timestamp}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function limpiarHistorial() {
+            historial = [];
+            document.getElementById('historial').innerHTML = 
+                '<p style="color: #999; text-align: center;">No hay conversiones recientes</p>';
+        }
+
+        // Inicializar
+        limpiarHistorial();
+    </script>
 </body>
 </html>
