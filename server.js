@@ -49,6 +49,14 @@ function romanToArabic(roman) {
     throw new Error('El número romano contiene caracteres inválidos');
   }
 
+  // Validación estricta: verificar que sea un número romano válido
+  // Reglas de formación correcta de números romanos
+  const validPattern = /^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
+  
+  if (!validPattern.test(romanUpper)) {
+    throw new Error('El número romano tiene un formato inválido (orden o combinación incorrecta)');
+  }
+
   const valores = {
     'I': 1,
     'V': 5,
@@ -88,7 +96,15 @@ function romanToArabic(roman) {
  * @throws {Error} - Si el número está fuera de rango
  */
 function arabicToRoman(num) {
-  const numero = parseInt(num);
+  // Validar que sea un string numérico o número
+  const numStr = String(num).trim();
+  
+  // Verificar que solo contenga dígitos
+  if (!/^\d+$/.test(numStr)) {
+    throw new Error('Debe proporcionar un número válido (solo dígitos)');
+  }
+
+  const numero = parseInt(numStr, 10);
 
   if (isNaN(numero)) {
     throw new Error('Debe proporcionar un número válido');

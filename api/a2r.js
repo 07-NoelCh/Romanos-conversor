@@ -1,5 +1,13 @@
 function arabicToRoman(num) {
-  const numero = parseInt(num);
+  // Validar que sea un string numérico o número
+  const numStr = String(num).trim();
+  
+  // Verificar que solo contenga dígitos
+  if (!/^\d+$/.test(numStr)) {
+    throw new Error('Debe proporcionar un número válido (solo dígitos)');
+  }
+
+  const numero = parseInt(numStr, 10);
 
   if (isNaN(numero)) {
     throw new Error('Debe proporcionar un número válido');

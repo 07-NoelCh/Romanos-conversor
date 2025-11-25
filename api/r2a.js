@@ -5,8 +5,17 @@ function romanToArabic(roman) {
 
   const romanUpper = roman.toUpperCase().trim();
   
+  // Validar caracteres permitidos
   if (!/^[IVXLCDM]+$/.test(romanUpper)) {
     throw new Error('El número romano contiene caracteres inválidos');
+  }
+
+  // Validación estricta: verificar que sea un número romano válido
+  // Reglas de formación correcta de números romanos
+  const validPattern = /^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/;
+  
+  if (!validPattern.test(romanUpper)) {
+    throw new Error('El número romano tiene un formato inválido (orden o combinación incorrecta)');
   }
 
   const valores = {
