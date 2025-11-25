@@ -86,3 +86,10 @@ function arabicToRoman(num) {
   }
   return result;
 }
+// ✅ Solo para ejecución local
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  });
+}
