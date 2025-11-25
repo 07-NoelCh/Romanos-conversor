@@ -1,51 +1,86 @@
-export default function handler(req, res) {
-    // Configurar CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+function arabicToRoman(num) {
+  const numero = parseInt(num);
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+  if (isNaN(numero)) {
+    throw new Error('Debe proporcionar un número válido');
+  }
+
+  if (numero < 1 || numero > 3999) {
+    throw new Error('El número debe estar entre 1 y 3999');
+  }
+
+  const conversiones = [
+    { valor: 1000, simbolo: 'M' },
+    { valor: 900, simbolo: 'CM' },
+    { valor: 500, simbolo: 'D' },
+    { valor: 400, simbolo: 'CD' },
+    { valor: 100, simbolo: 'C' },
+    { valor: 90, simbolo: 'XC' },
+    { valor: 50, simbolo: 'L' },
+    { valor: 40, simbolo: 'XL' },
+    { valor: 10, simbolo: 'X' },
+    { valor: 9, simbolo: 'IX' },
+    { valor: 5, simbolo: 'V' },
+    { valor: 4, simbolo: 'IV' },
+    { valor: 1, simbolo: 'I' }
+  ];
+
+  let resultado = '';
+  let restante = numero;
+
+  for (const { valor, simbolo } of conversiones) {
+    while (restante >= valor) {
+      resultado += simbolo;
+      restante -= valor;
     }
+  }
 
+  return resultado;
+}
+
+export default function handler(req, res) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({
+      status: 'error',
+      message: 'Método no permitido. Use GET'
+    });
+  }
+
+  try {
     const { arabic } = req.query;
 
-    if (!arabic || isNaN(arabic)) {
-        return res.status(400).json({
-            error: "Parámetro 'arabic' inválido"
-        });
+    if (!arabic) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Parámetro "arabic" es requerido',
+        example: '/api/a2r?arabic=14'
+      });
     }
 
-    const num = parseInt(arabic);
+    const romanResult = arabicToRoman(arabic);
 
-    if (num <= 0 || num > 3999) {
-        return res.status(400).json({
-            error: "El número debe estar entre 1 y 3999"
-        });
-    }
-
-    const tabla = [
-        { v: 1000, r: "M" }, { v: 900, r: "CM" },
-        { v: 500, r: "D" }, { v: 400, r: "CD" },
-        { v: 100, r: "C" }, { v: 90, r: "XC" },
-        { v: 50, r: "L" }, { v: 40, r: "XL" },
-        { v: 10, r: "X" }, { v: 9, r: "IX" },
-        { v: 5, r: "V" }, { v: 4, r: "IV" },
-        { v: 1, r: "I" }
-    ];
-
-    let n = num;
-    let resRoman = "";
-
-    for (const e of tabla) {
-        while (n >= e.v) {
-            resRoman += e.r;
-            n -= e.v;
-        }
-    }
-
-    res.status(200).json({ 
-        arabic: num,
-        roman: resRoman 
+    res.status(200).json({
+      status: 'success',
+      input: parseInt(arabic),
+      arabic: parseInt(arabic),
+      roman: romanResult,
+      timestamp: new Date().toISOString()
     });
+
+  } catch (error) {
+    res.status(400).json({
+      status: 'error',
+      message: error.message,
+      input: req.query.arabic
+    });
+  }
 }
