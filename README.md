@@ -43,7 +43,6 @@ El proyecto cumple con todos los requerimientos solicitados en la actividad acad
 - **Método:** GET  
 - **Ruta:** `/r2a?roman=VALOR_ROMANO`
 
-#### Ejemplo:
-Solicitud:
+
 
 
