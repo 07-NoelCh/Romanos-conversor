@@ -1,5 +1,3 @@
-const API_URL = "";
-
 // Detectar si es romano
 function esRomano(txt) {
     return /^[MDCLXVI]+$/i.test(txt);
@@ -23,19 +21,23 @@ async function convertir() {
     loading.classList.add("show");
 
     try {
-        let endpoint =
-            esRomano(valor)
-                ? `/api/r2a?roman=${valor}`
-                : `/api/a2r?arabic=${valor}`;
+        let endpoint = esRomano(valor)
+            ? `/api/r2a?roman=${encodeURIComponent(valor)}`
+            : `/api/a2r?arabic=${encodeURIComponent(valor)}`;
 
         const res = await fetch(endpoint);
         const data = await res.json();
 
-        if (data.error) throw new Error(data.error);
+        if (!res.ok || data.error) {
+            throw new Error(data.error || 'Error en la conversión');
+        }
 
-        resultado.textContent = esRomano(valor)
-            ? `${data.roman} = ${data.arabic}`
-            : `${data.arabic} = ${data.roman}`;
+        // Mostrar resultado basado en el tipo de conversión
+        if (esRomano(valor)) {
+            resultado.textContent = `${data.roman} = ${data.arabic}`;
+        } else {
+            resultado.textContent = `${data.arabic} = ${data.roman}`;
+        }
     } catch (e) {
         error.textContent = e.message;
         error.classList.add("show");

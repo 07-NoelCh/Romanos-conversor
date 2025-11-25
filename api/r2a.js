@@ -1,9 +1,20 @@
+
+}
 export default function handler(req, res) {
+    // Configurar CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     const { roman } = req.query;
 
     if (!roman || !/^[IVXLCDM]+$/i.test(roman)) {
         return res.status(400).json({
-            error: "Parámetro 'roman' inválido"
+            error: "Parámetro 'roman' inválido o vacío"
         });
     }
 
@@ -23,5 +34,8 @@ export default function handler(req, res) {
         }
     }
 
-    res.status(200).json({ arabic: total });
+    res.status(200).json({ 
+        roman: roman.toUpperCase(),
+        arabic: total 
+    });
 }
